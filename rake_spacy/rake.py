@@ -66,7 +66,7 @@ class Rake:
     def generate_frequency_dist(
         self, phrases: List[spacy.tokens.Span]
     ) -> Dict[str, int]:
-        fd = collections.Counter(t.text for t in itertools.chain(*phrases))
+        fd = collections.Counter(t.lemma_ for t in itertools.chain(*phrases))
         self.frequency_dist = fd
         return fd
 
@@ -84,14 +84,14 @@ class Rake:
         cog = collections.defaultdict(lambda: collections.defaultdict(int))
         for phrase in phrases:
             for word, coword in itertools.product(phrase, phrase):
-                cog[word.text][coword.text] += 1
+                cog[word.lemma_][coword.lemma_] += 1
         self.co_occurance_graph = cog
         return cog
 
     def generate_ranklist(
         self, phrases: List[spacy.tokens.Span]
     ) -> List[Tuple[float, spacy.tokens.Span]]:
-        rank_list = [(sum(self.word_score(t.text) for t in p), p) for p in phrases]
+        rank_list = [(sum(self.word_score(t.lemma_) for t in p), p) for p in phrases]
         self.rank_list = sorted(rank_list, reverse=True)
         self.ranked_phrases = [p for _, p in self.rank_list]
         return self.rank_list
