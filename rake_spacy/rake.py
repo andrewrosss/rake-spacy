@@ -157,7 +157,7 @@ class Rake:
         non-stopwords.
 
         Note:
-            This is the (essentially) the phrase-generation technique proposed
+            This is (essentially) the phrase-generation technique proposed
             in the original RAKE paper (DOI: 10.1002/9780470689646.ch1)
 
         Args:
