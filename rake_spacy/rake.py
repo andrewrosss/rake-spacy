@@ -237,7 +237,9 @@ class Rake:
         self.frequency_dist = fd
         return fd
 
-    def generate_degree(self, phrases: List[spacy.tokens.Span]) -> Dict[str, int]:
+    def generate_degree(
+        self, phrases: List[spacy.tokens.Span]
+    ) -> DefaultDict[str, int]:
         """Generates a dict-like object (specifically, a ``defaultdict``)
         where each key is a token string and each value is the associated
         degree of that word (node) in the co-occurance graph.
@@ -262,7 +264,7 @@ class Rake:
 
     def generate_word_co_occurance_graph(
         self, phrases: List[spacy.tokens.Span]
-    ) -> Dict[str, DefaultDict[str, int]]:
+    ) -> DefaultDict[str, DefaultDict[str, int]]:
         """Generates the co-occurance graph for the words in the given list
         of phrases.
 
