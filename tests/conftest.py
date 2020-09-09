@@ -1,12 +1,5 @@
-# stdlib
-# ------
-
-# 3rd party
 import pytest
 import spacy
-
-# local
-# -----
 
 
 @pytest.fixture(scope="session")

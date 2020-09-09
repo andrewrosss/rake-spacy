@@ -1,11 +1,6 @@
-# stdlib
-# ------
-
-# 3rd party
 import pytest
 import spacy
 
-# local
 from rake_spacy import rake
 
 

@@ -1,10 +1,3 @@
-# stdlib
-# ------
-
-# 3rd party
-# ---------
-
-# local
 import rake_spacy
 
 
