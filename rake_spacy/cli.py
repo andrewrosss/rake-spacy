@@ -1,12 +1,7 @@
-# stdlib
-import sys
 import argparse
+import sys
 
-# 3rd party
 from loguru import logger
-
-# local
-# -----
 
 
 def cli() -> None:

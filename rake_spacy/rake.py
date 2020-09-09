@@ -1,14 +1,14 @@
-# stdlib
+import collections
 import enum
 import itertools
-import collections
-from typing import Callable, DefaultDict, Dict, List, Tuple, Union
+from typing import Callable
+from typing import DefaultDict
+from typing import Dict
+from typing import List
+from typing import Tuple
+from typing import Union
 
-# 3rd party
 import spacy
-
-# local
-# -----
 
 
 class Metric(enum.Enum):
