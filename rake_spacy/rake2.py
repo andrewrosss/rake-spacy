@@ -1,7 +1,7 @@
 import collections
 import itertools
+from typing import Counter
 from typing import DefaultDict
-from typing import Dict
 from typing import List
 from typing import Tuple
 
@@ -22,7 +22,7 @@ class Rake(object):
         self,
         min_length=1,
         max_length=100_000,
-        nlp=None,
+        nlp: spacy.language.Language = None,
         stop_token_class: stop_tokens.BaseStopTokenIndicator = None,
         phraser_class: phrasers.BasePhraser = None,
         token_mapper_class: mappers.BaseTokenMapper = None,
@@ -36,6 +36,8 @@ class Rake(object):
         self.min_length = min_length
         self.max_length = max_length
         self.nlp = spacy.load("en_core_web_sm") if nlp is None else nlp
+
+        # injected classes
         self.stop_token_class = (
             stop_tokens.BasicStopTokenIndicator()
             if stop_token_class is None
@@ -60,34 +62,44 @@ class Rake(object):
             else aggregator_class
         )
 
-    def extract_keywords_from_text(
-        self, text: str
-    ) -> List[Tuple[float, spacy.tokens.Span]]:
-        """Method to extract keywords from the text provided.
+        # these properties are set by the .apply() method (or equivalently,
+        # the .extract_keywords_from_text() method)
+        self.co_occurance_graph: DefaultDict[str, DefaultDict[str, int]]
+        self.frequency_dist: Counter[str]
+        self.degree: DefaultDict[str, int]
+        self.rank_list: List[Tuple[float, spacy.tokens.Span]]
+        self.ranked_phrases: List[spacy.tokens.Span]
+
+    def apply(self, text: str) -> List[Tuple[float, spacy.tokens.Span]]:
+        """Method to extract keywords from the provided text by applying the RAKE
+        algorithm.
 
         :param text: Text to extract keywords from, provided as a string.
         """
         doc = self.nlp(text)
+        return self.apply_to_doc(doc)
+
+    def apply_to_doc(
+        self, doc: spacy.tokens.Doc
+    ) -> List[Tuple[float, spacy.tokens.Span]]:
         phrases = self.phraser_class(doc)
         self.co_occurance_graph = self.generate_word_co_occurance_graph(phrases)
         self.frequency_dist = self.generate_frequency_dist(phrases)
-        self.degree = self.generate_degree(phrases)
-        return self.generate_ranklist(phrases)
+        self.degree = self.generate_degree()
+        self.rank_list = self.generate_ranklist(phrases)
+        self.ranked_phrases = [p for _, p in self.rank_list]
+        return self.rank_list
 
-    # def extract_keywords_from_sentences(self, sentences):
-    #     ...
+    def extract_keywords_from_doc(
+        self, doc: spacy.tokens.Doc
+    ) -> List[Tuple[float, spacy.tokens.Span]]:
+        return self.apply_to_doc(doc)
 
-    # def get_ranked_phrases(self):
-    #     ...
-
-    # def get_ranked_phrases_with_scores(self):
-    #     ...
-
-    # def get_word_frequency_distribution(self):
-    #     ...
-
-    # def get_word_degrees(self):
-    #     ...
+    def extract_keywords_from_text(
+        self, text: str
+    ) -> List[Tuple[float, spacy.tokens.Span]]:
+        """This is an alias for RAKE.apply()."""
+        return self.apply(text)
 
     def generate_word_co_occurance_graph(
         self, phrases: List[spacy.tokens.Span]
@@ -99,20 +111,16 @@ class Rake(object):
                     cograph[word][coword] += 1
         return cograph
 
-    def generate_frequency_dist(
-        self, phrases: List[spacy.tokens.Span]
-    ) -> Dict[str, int]:
+    def generate_frequency_dist(self, phrases: List[spacy.tokens.Span]) -> Counter[str]:
         # recall self.stop_token_class returns True if the token is a "stop token"
         words = [t for t in itertools.chain(*phrases) if not self.stop_token_class(t)]
         word_strings = [self.token_mapper_class(t) for t in words]
         fd = collections.Counter(word_strings)
         return fd
 
-    def generate_degree(
-        self, phrases: List[spacy.tokens.Span]
-    ) -> DefaultDict[str, int]:
+    def generate_degree(self) -> DefaultDict[str, int]:
         cograph = self.co_occurance_graph
-        degree = collections.defaultdict(int)
+        degree: DefaultDict[str, int] = collections.defaultdict(int)
         for word in cograph:
             degree[word] = sum(cograph[word].values())
         return degree
@@ -125,6 +133,4 @@ class Rake(object):
         rank_list = [
             (self.aggregator_class(word_scores), p) for word_scores, p in scores
         ]
-        self.rank_list = sorted(rank_list, key=lambda t: (-t[0], t[1].text))
-        self.ranked_phrases = [p for _, p in self.rank_list]
-        return self.rank_list
+        return sorted(rank_list, key=lambda t: (-t[0], t[1].text))
