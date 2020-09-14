@@ -82,7 +82,11 @@ class Rake(object):
     def apply_to_doc(
         self, doc: spacy.tokens.Doc
     ) -> List[Tuple[float, spacy.tokens.Span]]:
-        phrases = self.phraser_class(doc)
+        phrases = [
+            p
+            for p in self.phraser_class(doc)
+            if self.min_length <= len(p) <= self.max_length
+        ]
         self.co_occurance_graph = self.generate_word_co_occurance_graph(phrases)
         self.frequency_dist = self.generate_frequency_dist(phrases)
         self.degree = self.generate_degree()
