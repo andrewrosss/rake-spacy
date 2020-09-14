@@ -21,19 +21,19 @@ class BaseScorer(ABC):
 
 class DegreeScorer(BaseScorer):
     def __call__(self, cog, token: spacy.tokens.Token) -> float:
-        return sum(cog[token].values())
+        return float(sum(cog[token].values()))
 
 
 class FrequencyScorer(BaseScorer):
     def __call__(self, cog, token: spacy.tokens.Token) -> float:
-        return cog[token][token]
+        return float(cog[token][token])
 
 
 class DegreeToFrequencyScorer(BaseScorer):
     def __call__(self, cog, token: spacy.tokens.Token) -> float:
         freq = cog[token][token]
         deg = sum(cog[token].values())
-        return 0 if freq == 0 else deg / freq
+        return float(0 if freq == 0 else deg / freq)
 
 
 class LocationPenalizedFrequencyScorer(BaseScorer):
