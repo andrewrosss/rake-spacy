@@ -112,6 +112,11 @@ class Rake(object):
         for phrase in phrases:
             for word, coword in itertools.product(phrase, phrase):
                 if not (self.stop_token_class(word) or self.stop_token_class(coword)):
+                    # NOTE: Here we "double count" words which appear twice in one
+                    #       phrase. Ex: "millions and millions", this phrase would
+                    #       add 4 to the cograph (by the end of this function call),
+                    #       as opposed to 2 (which is what might be expected if
+                    #       the diagonal was to only be the word frequency/count).
                     cograph[word][coword] += 1
         return cograph
 
