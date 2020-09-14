@@ -12,14 +12,14 @@ class BaseTokenMapper(ABC):
 
 class LemmaMapper(BaseTokenMapper):
     def __call__(self, token: spacy.tokens.Token) -> str:
-        return token.lemma_
+        return token if isinstance(token, str) else token.lemma_
 
 
 class LemmaLowerMapper(BaseTokenMapper):
     def __call__(self, token: spacy.tokens.Token) -> str:
-        return token.lemma_.lower()
+        return token if isinstance(token, str) else token.lemma_.lower()
 
 
 class TextMapper(BaseTokenMapper):
     def __call__(self, token: spacy.tokens.Token) -> str:
-        return token.text
+        return token if isinstance(token, str) else token.text
