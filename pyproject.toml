@@ -11,7 +11,7 @@ spacy-lookups-data = "^0.2.0"
 loguru = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
+pytest = "^6.0"
 black = "^19.10b0"
 flake8 = "^3.7.9"
 pylint = "^2.4.4"
@@ -19,6 +19,7 @@ bump2version = "^1.0.0"
 docutils = "^0.16"
 rstcheck = "^3.3.1"
 reorder-python-imports = "^2.3.5"
+pytest-mock = "^3.3.1"
 
 [tool.poetry.scripts]
 rake-spacy = "rake_spacy.cli:cli"
