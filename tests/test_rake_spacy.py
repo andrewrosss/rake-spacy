@@ -2,7 +2,7 @@ import rake_spacy
 
 
 def test_version():
-    assert rake_spacy.__version__ == "0.2.0"
+    assert rake_spacy.__version__ == "0.3.0"
 
 
 def test_Rake_is_top_level_attribute():
