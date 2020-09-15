@@ -1,5 +1,7 @@
 # rake-spacy
 
+![Code Style](https://github.com/andrewrosss/rake-spacy/workflows/Code%20Style/badge.svg) ![Tests](https://github.com/andrewrosss/rake-spacy/workflows/Tests/badge.svg) [![codecov](https://codecov.io/gh/andrewrosss/rake-spacy/branch/master/graph/badge.svg)](https://codecov.io/gh/andrewrosss/rake-spacy)
+
 Python implementation of the RAKE (short for **R**apid **A**utomatic **K**eyword **E**xtraction) algorithm using spaCy.
 
 ## Installation
