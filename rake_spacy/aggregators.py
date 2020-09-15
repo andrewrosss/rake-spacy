@@ -8,6 +8,14 @@ import numpy as np
 class BaseAggregator(ABC):
     @abstractmethod
     def __call__(self, scores: List[float]) -> float:
+        """Reduces a list of numbers to a single number.
+
+        Args:
+            scores (List[float]): The numbers over which to perform the reduction.
+
+        Returns:
+            float: The result.
+        """
         pass
 
 

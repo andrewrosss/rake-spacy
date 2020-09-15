@@ -7,6 +7,14 @@ import spacy
 class BaseTokenMapper(ABC):
     @abstractmethod
     def __call__(self, token: spacy.tokens.Token) -> str:
+        """Returns a string representation of a spacy Token.
+
+        Args:
+            token (spacy.tokens.Token): The token to coerce to a string.
+
+        Returns:
+            str: The resulting string representation.
+        """
         pass
 
 
