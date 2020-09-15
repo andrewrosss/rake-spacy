@@ -1,19 +1,7 @@
-# stdlib
-# ------
-
-# 3rd party
 import pytest
 import spacy
 
-# local
 from rake_spacy import rake
-
-
-class TestMetric:
-    def test_enumeration_members(self):
-        assert isinstance(rake.Metric.DEGREE_TO_FREQUENCY_RATIO, rake.Metric)
-        assert isinstance(rake.Metric.WORD_DEGREE, rake.Metric)
-        assert isinstance(rake.Metric.WORD_FREQUENCY, rake.Metric)
 
 
 class TestRake:
@@ -21,55 +9,44 @@ class TestRake:
         r = rake.Rake()
 
         # constructor args
-        assert r.ranking_metric == rake.Metric.DEGREE_TO_FREQUENCY_RATIO
         assert r.max_length == 100_000
         assert r.min_length == 1
-        assert r.nlp is None
+        assert r.nlp.meta["lang"] == "en" and r.nlp.meta["name"] == "core_web_sm"
 
         # internal attributes
-        assert r.frequency_dist is None
-        assert r.degree is None
-        assert r.co_occurance_graph is None
-        assert r.rank_list is None
-        assert r.ranked_phrases is None
+        assert isinstance(r.stop_token_class, rake.stop_tokens.BaseStopTokenIndicator)
+        assert isinstance(r.phraser_class, rake.phrasers.BasePhraser)
+        assert isinstance(r.token_mapper_class, rake.mappers.BaseTokenMapper)
+        assert isinstance(r.word_scorer_class, rake.scorers.BaseScorer)
+        assert isinstance(r.aggregator_class, rake.aggregators.BaseAggregator)
 
-    def test_user_specified_args_to_init(self, nlp):
+    def test_args_passed_to_init_are_set_as_attributes(self, mocker):
+        nlp_mock = mocker.MagicMock()
+        stop_token_class_mock = mocker.MagicMock()
+        phraser_class_mock = mocker.MagicMock()
+        token_mapper_class_mock = mocker.MagicMock()
+        word_scorer_class_mock = mocker.MagicMock()
+        aggregator_class_mock = mocker.MagicMock()
+
         r = rake.Rake(
-            nlp=nlp,
-            ranking_metric=rake.Metric.WORD_DEGREE,
-            max_length=10,
-            min_length=10,
+            min_length=2,
+            max_length=3,
+            nlp=nlp_mock,
+            stop_token_class=stop_token_class_mock,
+            phraser_class=phraser_class_mock,
+            token_mapper_class=token_mapper_class_mock,
+            word_scorer_class=word_scorer_class_mock,
+            aggregator_class=aggregator_class_mock,
         )
 
-        assert r.ranking_metric == rake.Metric.WORD_DEGREE
-        assert r.max_length == 10
-        assert r.min_length == 10
-        assert r.nlp == nlp
-
-    @pytest.mark.parametrize(
-        "text,expected",
-        [
-            (
-                "red apples, are good in flavour",
-                [False, False, True, True, False, True, False],
-            ),
-            (
-                "Apple is looking at buying company for $1 billion",
-                [False, True, False, True, False, False, True, False, False, False],
-            ),
-            (
-                "Hello, world. Here are two sentences.",
-                [False, True, False, True, True, True, False, False, True],
-            ),
-        ],
-    )
-    def test_to_ignore(self, nlp, text, expected):
-        r = rake.Rake()
-        doc = nlp(text)
-        actual = [r.to_ignore(t) for t in doc]
-        assert actual == expected, [
-            (t, e, a) for t, e, a in zip(doc, expected, actual) if e != a
-        ]
+        assert r.min_length == 2
+        assert r.max_length == 3
+        assert r.nlp == nlp_mock
+        assert r.stop_token_class == stop_token_class_mock
+        assert r.phraser_class == phraser_class_mock
+        assert r.token_mapper_class == token_mapper_class_mock
+        assert r.word_scorer_class == word_scorer_class_mock
+        assert r.aggregator_class == aggregator_class_mock
 
     @pytest.mark.parametrize(
         "text,expected",
@@ -85,10 +62,27 @@ class TestRake:
             ),
         ],
     )
-    def test_generate_phrases(self, nlp, text, expected):
+    def test__generate_phrases(self, nlp, text, expected):
         r = rake.Rake()
         doc = nlp(text)
-        actual = [phrase.text for phrase in r.generate_phrases(doc)]
+        actual = [phrase.text for phrase in r._generate_phrases(doc)]
+        assert actual == expected
+
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            ("red apples, are good in flavour", ["good", "flavour"],),
+            (
+                "Apple is looking at buying company for $1 billion",
+                ["Apple", "looking"],
+            ),
+            ("Hello, world. Here are two sentences.", ["Hello", "world"],),
+        ],
+    )
+    def test__generate_phrases_with_max_phrase_length_set(self, nlp, text, expected):
+        r = rake.Rake(min_length=1, max_length=1)
+        doc = nlp(text)
+        actual = [phrase.text for phrase in r._generate_phrases(doc)]
         assert actual == expected
 
     @pytest.mark.parametrize(
@@ -119,13 +113,12 @@ class TestRake:
             ),
         ],
     )
-    def test_generate_frequency_dist(self, nlp, text, phrase_endpoints, expected):
-        r = rake.Rake()
+    def test__generate_frequency_dist(self, nlp, text, phrase_endpoints, expected):
+        r = rake.Rake(token_mapper_class=str)  # type: ignore
         doc = nlp(text)
         phrases = [spacy.tokens.Span(doc, s, e) for s, e in phrase_endpoints]
-        actual = r.generate_frequency_dist(phrases)
-        assert actual == expected
-        assert r.frequency_dist == expected
+        actual = r._generate_frequency_dist(phrases)
+        assert dict(actual) == expected
 
     @pytest.mark.parametrize(
         "text,phrase_endpoints,expected",
@@ -165,27 +158,24 @@ class TestRake:
             ),
         ],
     )
-    def test_generate_word_co_occurance_graph(
+    def test__generate_word_co_occurance_graph(
         self, nlp, text, phrase_endpoints, expected
     ):
-        r = rake.Rake()
+        r = rake.Rake(token_mapper_class=str)  # type: ignore
         doc = nlp(text)
         phrases = [spacy.tokens.Span(doc, s, e) for s, e in phrase_endpoints]
-        actual = r.generate_word_co_occurance_graph(phrases)
+        actual = r._generate_word_co_occurance_graph(phrases)
         assert actual == expected
-        assert r.co_occurance_graph == expected
 
     @pytest.mark.parametrize(
-        "text,phrase_endpoints,expected",
+        "text,expected",
         [
             (
                 "red apples, are better than green apples.",
-                [(0, 2), (4, 5), (6, 8)],
                 {"apples": 4, "red": 2, "better": 1, "green": 2},
             ),
             (
                 "Apple is looking at buying company for $1 billion",
-                [(0, 1), (2, 3), (4, 6), (7, 10)],
                 {
                     "Apple": 1,
                     "looking": 1,
@@ -198,51 +188,14 @@ class TestRake:
             ),
             (
                 "Hello, world. Here are two sentences.",
-                [(0, 1), (2, 3), (6, 8)],
                 {"Hello": 1, "world": 1, "two": 2, "sentences": 2},
             ),
         ],
     )
-    def test_generate_degree(self, nlp, text, phrase_endpoints, expected):
-        r = rake.Rake()
-        doc = nlp(text)
-        phrases = [spacy.tokens.Span(doc, s, e) for s, e in phrase_endpoints]
-        actual = r.generate_degree(phrases)
+    def test__generate_degree(self, text, expected):
+        r = rake.Rake(token_mapper_class=str)
+        # apply() is required because _generate_degree depends on the
+        # co_occurange_graph existing as an attribute on r
+        _ = r.apply(text)
+        actual = r._generate_degree()
         assert actual == expected
-        assert r.degree == expected
-
-    @pytest.mark.parametrize("degree", range(3))
-    @pytest.mark.parametrize("frequency_dist", range(1, 3))
-    def test_word_score_degree_to_frequency_ratio(self, degree, frequency_dist):
-        r = rake.Rake(ranking_metric=rake.Metric.DEGREE_TO_FREQUENCY_RATIO)
-        r.degree = {"test": degree}
-        r.frequency_dist = {"test": frequency_dist}
-
-        actual = r.word_score("test")
-        expected = degree / frequency_dist
-
-        assert actual - expected < 1e-7
-
-    @pytest.mark.parametrize("degree", range(3))
-    @pytest.mark.parametrize("frequency_dist", range(1, 3))
-    def test_word_score_word_degree(self, degree, frequency_dist):
-        r = rake.Rake(ranking_metric=rake.Metric.WORD_DEGREE)
-        r.degree = {"test": degree}
-        r.frequency_dist = {"test": frequency_dist}
-
-        actual = r.word_score("test")
-        expected = degree
-
-        assert actual - expected < 1e-7
-
-    @pytest.mark.parametrize("degree", range(3))
-    @pytest.mark.parametrize("frequency_dist", range(1, 3))
-    def test_word_score_word_frequency(self, degree, frequency_dist):
-        r = rake.Rake(ranking_metric=rake.Metric.WORD_FREQUENCY)
-        r.degree = {"test": degree}
-        r.frequency_dist = {"test": frequency_dist}
-
-        actual = r.word_score("test")
-        expected = frequency_dist
-
-        assert actual - expected < 1e-7
