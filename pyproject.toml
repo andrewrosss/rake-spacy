@@ -2,7 +2,25 @@
 name = "rake-spacy"
 version = "0.2.0"
 description = "Extract keywords/keyphrases from text using the RAKE algorithm."
-authors = ["Andrew Ross <andrew.ross.mail@gmail.com>"]
+authors = [
+    "Andrew Ross <andrew.ross.mail@gmail.com>"
+]
+license = "MIT"
+
+readme = "README.md"
+
+homepage = "https://github.com/andrewrosss/rake-spacy"
+repository = "https://github.com/andrewrosss/rake-spacy"
+documentation = "https://github.com/andrewrosss/rake-spacy"
+
+keywords = ["ml", "nlp", "rake"]
+
+classifiers = [
+    "Programming Language :: Python :: 3.0",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: MIT License",
+    "Development Status :: 4 - Beta",
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
