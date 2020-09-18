@@ -17,4 +17,4 @@ jobs:
           pip install mypy
       - name: "Type Check with Mypy"
         run: |
-          mypy rake_spacy
+          mypy rake_spacy/
