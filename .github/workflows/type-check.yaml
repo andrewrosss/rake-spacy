@@ -20,4 +20,4 @@ jobs:
           poetry install --no-interaction
       - name: "Type Check with Mypy"
         run: |
-          ls -la
+          mypy rake_spacy
