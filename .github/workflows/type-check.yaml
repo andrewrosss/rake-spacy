@@ -17,7 +17,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           poetry config virtualenvs.create false
-          poetry install --no-interaction
-      - name: "Type Check with Mypy"
+          poetry install --no-interaction --no-dev
+      - name: "Set up Node.js"
+        uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+      - name:
         run: |
-          mypy rake_spacy
+          npm install -g pyright
+      - name: "Type Check with Pyright"
+        run: |
+          pyright rake_spacy/
