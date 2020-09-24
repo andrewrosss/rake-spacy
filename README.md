@@ -6,16 +6,16 @@ Python implementation of the RAKE (short for **R**apid **A**utomatic **K**eyword
 
 ## Installation
 
-This package is pip-installable.
-
 ```bash
 pip install rake-spacy
-
-# download the default spacy language model used by rake-spacy
-python -m spacy download en_core_web_sm
 ```
 
-Since rake-spacy depends on spacy, and to used spacy one has to load a language model. By default, rake-spacy will try to load spacy's `en_core_web_sm` model, hence the second line above, however, you can easily provide rake spacy with any language model/pipeline of your chosing. (Just about any `nlp` object from the spacy docs.)
+Since rake-spacy depends on spacy, and to used spacy one has to load a language model, by default, rake-spacy will try to load spacy's `en_core_web_sm` model, so also grab that language model as well.
+
+```bash
+python -m spacy download en_core_web_sm
+```
+While this is the model used by rake-spacy by default, you can easily provide rake spacy with any language model/pipeline of your chosing. (Just about any `nlp` object from the spacy docs.)
 
 ## Getting Started
 
