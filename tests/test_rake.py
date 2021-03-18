@@ -51,7 +51,10 @@ class TestRake:
     @pytest.mark.parametrize(
         "text,expected",
         [
-            ("red apples, are good in flavour", ["red apples", "good", "flavour"],),
+            (
+                "red apples, are good in flavour",
+                ["red apples", "good", "flavour"],
+            ),
             (
                 "Apple is looking at buying company for $1 billion",
                 ["Apple", "looking", "buying company", "$1 billion"],
@@ -71,12 +74,18 @@ class TestRake:
     @pytest.mark.parametrize(
         "text,expected",
         [
-            ("red apples, are good in flavour", ["good", "flavour"],),
+            (
+                "red apples, are good in flavour",
+                ["good", "flavour"],
+            ),
             (
                 "Apple is looking at buying company for $1 billion",
                 ["Apple", "looking"],
             ),
-            ("Hello, world. Here are two sentences.", ["Hello", "world"],),
+            (
+                "Hello, world. Here are two sentences.",
+                ["Hello", "world"],
+            ),
         ],
     )
     def test__generate_phrases_with_max_phrase_length_set(self, nlp, text, expected):
