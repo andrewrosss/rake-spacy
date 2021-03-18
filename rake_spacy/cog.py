@@ -1,5 +1,6 @@
 from typing import Callable
 from typing import DefaultDict
+from typing import Generic
 from typing import TypeVar
 from typing import Union
 
@@ -10,7 +11,11 @@ KT = TypeVar("KT")
 VT = TypeVar("VT")
 
 
-class ProxiedDefaultDict(DefaultDict[KT, VT]):
+class KeyType(Generic[KT]):
+    ...
+
+
+class ProxiedDefaultDict(KeyType[KT], DefaultDict[str, VT]):
     """A thin wrapper around collections.defaultdict.
 
     This class slides in a transformation between objects passed to __getitem__
@@ -65,7 +70,13 @@ class ProxiedDefaultDict(DefaultDict[KT, VT]):
 
     def __init__(self, proxy: Callable[[Union[str, KT]], str] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.proxy = str if proxy is None else proxy
+
+        def to_string(k: Union[str, KT]) -> str:
+            """This function is just a wrapper around "str" so that str
+            looks like a callable that returns a string to intellisense."""
+            return str(k)
+
+        self.proxy = to_string if proxy is None else proxy
 
     def __getitem__(self, k: Union[str, KT]) -> VT:
         return super().__getitem__(self.proxy(k))
