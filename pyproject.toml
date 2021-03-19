@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rake-spacy"
-version = "0.3.0"
+version = "0.3.1"
 description = "Extract keywords/keyphrases from text using the RAKE algorithm."
 authors = [
     "Andrew Ross <andrew.ross.mail@gmail.com>"
